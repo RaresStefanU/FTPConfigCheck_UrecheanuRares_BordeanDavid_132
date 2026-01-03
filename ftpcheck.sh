@@ -1,8 +1,31 @@
 #!/bin/bash
 
 
-#Validarea existentei fisierului
+# Verifica:
+
+# - existenta fisierului:
+
+
+# - permisiunile fisierului:
+
+
+# - optiuni critice de securitate:
+
+
+
 
 #Analiza fisierului
 
-#Afisare?
+
+
+
+
+# Afisare:
+
+# - problemele detectate:
+
+
+
+
+# - configuratii conforme:
+
