@@ -5,6 +5,22 @@
 
 
 # - existenta fisierului:
+CONFIG="$1"
+
+if [ -z "$CONFIG" ]; then
+    echo "Usage: $0 <config_file>"
+    exit 1
+fi
+
+if [ ! -f "$CONFIG" ]; then
+    echo "Error: file does not exist"
+    exit 1
+fi
+
+if [ ! -r "$CONFIG" ]; then
+    echo "Error: file is not readable"
+    exit 1
+fi
 
 #daca utilizatorul nu a dat ca parametru fisierul
 if [ -z "$1" ] then
