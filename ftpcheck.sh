@@ -19,6 +19,15 @@ if ! [ -e "$CALE_FISIER" ]; then
     exit $2
 fi
 
+
+# Parsing fisier + ignora comentariile
+# SCI = Separator de Camp Intern
+while SCI= read -r line; do
+    line=$(echo "$line" | sed 's/#.*//')
+    [ -z "$line" ] && continue
+done < "$CONFIG"
+
+
 # - permisiunile fisierului:
 
 
