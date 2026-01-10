@@ -67,5 +67,15 @@ done < "$CALE_FISIER" #"$CONFIG"
 # - configuratii conforme:
 
 # Exit standard
-echo "Program functional" #Pentru testare,  sterge la final
+#Pentru testare,  sterge la final
+
+while test= read -r key; do
+    echo "cheie: $key"
+    echo "valoare: ${value[$key]}"
+    echo "linie: ${linie_no[$key]}"
+done < <(printf "%s\n" "${!value[@]}")
+
+printf '%s\n' "${!line_no[@]}"
+
+
 exit 0
