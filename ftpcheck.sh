@@ -1,5 +1,6 @@
 #!/bin/bash
-# Acest scripr 
+
+# (optional) Banner
 
 
 # #1 Verifica:
@@ -7,15 +8,25 @@
 
 # Daca utilizatorul nu a dat ca parametru fisierul
 if [ -z "$1" ]; then
+    echo "[EROARE] Lipseste fisierul de configurare!"
     echo "Utilizare: $0 <cale_fisier>"
+    echo "Exemplu: $0 /etc/vsftpd/vsftpd.conf"
     exit 1
 fi
 
 CALE_FISIER=$1
 
+echo "[INFO] Verificare existenta fisier:"
 if ! [ -e "$CALE_FISIER" ]; then
-    echo "Fisierul nu a fost gasit!"
-    exit 2
+    # Daca fisierul nu exista
+    echo "[EROARE] Fisierul nu a fost gasit!"
+    exit 1
+elif ! [ -f "$CALE_FISIER" ]; then 
+    # Daca calea nu duce catre un fisier (ex. duce catre un director)
+    echo "[EROARE] Calea specificata nu este un fisier valid!"
+    exit 1
+else
+    echo "[OK] Fisierul exista."
 fi
 
 
@@ -44,6 +55,9 @@ while IFS= read -r line; do
 done < "$CALE_FISIER" #"$CONFIG"
 
 # - permisiunile fisierului:
+
+
+
 # - optiuni critice de securitate:
 
 # #2 Afisare:
