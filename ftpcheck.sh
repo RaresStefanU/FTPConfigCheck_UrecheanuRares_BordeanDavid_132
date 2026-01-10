@@ -3,6 +3,9 @@
 # (optional) Banner
 
 
+# Contoare pentru raport final
+warnings=0
+
 # #1 Verifica:
 # - existenta fisierului:
 
@@ -27,32 +30,43 @@ elif ! [ -f "$CALE_FISIER" ]; then
     exit 1
 else
     echo "[OK] Fisierul exista."
+    echo ""
 fi
 
 
-# Parsing fisier + ignora comentariile + regex
+# Parsing fisier + ignora comentariile + ?regex (am pus totul intr-o functie)
+ParseIgnoreRegex() {
 
-# Doua matrice asociative:
-declare -A value # prima pentru valoari - atribute ale configurarii
-declare -A line_no # a doua pentru linia pe care se afla valoarea
+    echo "[INFO] Parsing in desfasurare:"
+    # Doua matrice asociative:
+    declare -A value # prima pentru valoari - atribute ale configurarii
+    declare -A line_no # a doua pentru linia pe care se afla valoarea
 
 
-nr=0 # Luam fiecare linie pe care e scris ceva|contor ptr linie
-# Dupa parsig numarul de linii trebuie sa fie egal cu numarul de 
+    local nr=0 # contor pentru liniile fisierului
 
-# IFS = Internal Field Separator (Separator de Camp Intern)
-while IFS= read -r line; do
-    ((nr++))
-    line=$(echo "$line" | sed 's/#.*//' | xargs)
-    [ -z "$line" ] && continue
+    # IFS = Internal Field Separator (Separator de Camp Intern)
+    while IFS= read -r line; do
+        ((nr++))
+        # Ignoram liniile goale si comentariile
+        line=$(echo "$line" | sed 's/#.*//' | xargs)
+        [ -z "$line" ] && continue
 
-    if [[ "$line" =~ ^([^=]+)=(.*)$ ]]; then
-        key="${BASH_REMATCH[1]}" 
-        val="${BASH_REMATCH[2]}"
-        value[$key]="$val"
-        line_no[$key]="$nr"
-    fi
-done < "$CALE_FISIER" #"$CONFIG"
+        # Verifica daca se poate sparge linia in CHEIE = VALOARE
+        if [[ "$line" =~ ^([^=]+)=(.*)$ ]]; then # Regex propriu zis  
+            key="${BASH_REMATCH[1]}" # Partea dinainte de = devine CHEIE
+            val="${BASH_REMATCH[2]}" # Partea dupa = devine VALOARE
+            value[$key]="$val"
+            line_no[$key]="$nr"
+        else
+            ((warnings++))
+            echo "[CRITIC] Eroare la folosirea expresiilor regulare pe linia $nr !"
+        fi
+    done < "$CALE_FISIER" #"$CONFIG"
+    echo "[INFO] Parsing complet."
+    echo ""
+}
+ParseIgnoreRegex
 
 # - permisiunile fisierului:
 
@@ -65,5 +79,5 @@ done < "$CALE_FISIER" #"$CONFIG"
 # - configuratii conforme:
 
 # Exit standard
-echo "Program functional" #Pentru testare,  sterge la final
+echo "[OK] Program functional" #Pentru testare,  sterge la final
 exit 0
