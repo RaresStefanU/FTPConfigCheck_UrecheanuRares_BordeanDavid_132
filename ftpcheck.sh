@@ -33,6 +33,10 @@ ParseIgnoreRegex() {
     declare -gA value # prima pentru valoari - atribute ale configurarii
     declare -gA line_no # a doua pentru linia pe care se afla valoarea
 
+    # Doua matrici pentru directive duplicate:
+    declare -gA count       # numar aparitii directive
+    declare -gA all_lines   # toate liniile unde apare directiva
+
 
     local nr=0 # contor pentru liniile fisierului
 
@@ -47,54 +51,25 @@ ParseIgnoreRegex() {
         if [[ "$line" =~ ^([^=]+)=(.*)$ ]]; then # Regex propriu zis  
             key="${BASH_REMATCH[1]}" # Partea dinainte de = devine CHEIE
             val="${BASH_REMATCH[2]}" # Partea dupa = devine VALOARE
-            value[$key]="$val"
-            line_no[$key]="$nr"
+            ((count[$key]++))
+            if [[ -n "${all_lines[$key]}" ]]; then
+                all_lines[$key]="${all_lines[$key]}, $nr"
+            else
+                all_lines[$key]="$nr"
+            fi
+            value[$key]="$val"      # valoarea finala activa
+            line_no[$key]="$nr"     # ultima linie
         else
             ((warnings++))
             echo "[CRITIC] Eroare la folosirea expresiilor regulare pe linia $nr !"
         fi
-    done < "$CALE_FISIER" #"$CONFIG"
+    done < "$CALE_FISIER"
 }
 ParseIgnoreRegex
-
-# - permisiunile fisierului:
-
-crit_set=0
-ok_set=0
-
-perms=$(stat -c "%a" "$CALE_FISIER" 2>/dev/null)
-owner=$(stat -c "%U" "$CALE_FISIER" 2>/dev/null)
-echo "[INFO] Permisiuni curente: $perms"
-echo "[INFO] Proprietar: $owner"
-
-if [ $((perms & 002)) -ne 0 ]; then
-    echo -e "\e[31m[CRITIC] Fisierul este modificabil de oricine (world-writable)!\e[0m"
-    ((crit_set++))
-else
-    echo -e "\e[32m[OK] Fisierul nu este world-writable\e[0m"
-    ((ok_set++))
-fi
-
-if [ $((perms & 020)) -ne 0 ]; then
-    echo -e "\e[33m[WARNING] Fisierul este modificabil de grup\e[0m"
-    echo -e "\e[33m         Recomandare: chmod 644 sau 600\e[0m"
-fi
-
-
-#recomandare (muta la fin)
-if [ "$perms" != "600" ] && [ "$perms" != "644" ]; then
-    echo -e "\e[33m[WARNING] Permisiuni recomandate: 600 (root only) sau 644\e[0m"
-    echo -e "\e[33m         Permisiuni curente: $perms\e[0m"
-fi
-
-echo ""
-
 
 # - optiuni critice de securitate:
 
 # - setari duplicate:
-
-
 
 
 # - optiuni de securitate:
@@ -146,6 +121,7 @@ for key in "${!value_optim[@]}"; do
 done
 
 # Rezumat:
+
 echo -e "\e[34m------------------------------------------------\e[0m"
 echo "Rezumat:"
 if (($setari_critice == 1)); then
@@ -163,6 +139,50 @@ if (($setari_ok == 1)); then
 else
     echo -e "\e[32m- $setari_ok setari ok\e[m"
 fi
+echo ""
+
+# Directive duplicate:
+echo "Directive duplicate:"
+for key in "${!count[@]}"; do
+    if (( count[$key] > 1 )); then
+        echo -e "\e[33m-$key apare de ${count[$key]} ori (linii:${all_lines[$key]})\e[0m"
+        echo -e "\e[33m          Valoare finala activa: ${value[$key]}\e[0m"
+    fi
+done
+echo ""
+# Permisiuni
+# - permisiunile fisierului:
+echo "Permisiuni:"
+
+crit_set=0
+ok_set=0
+
+perms=$(stat -c "%a" "$CALE_FISIER" 2>/dev/null)
+owner=$(stat -c "%U" "$CALE_FISIER" 2>/dev/null)
+echo "[INFO] Permisiuni curente: $perms"
+echo "[INFO] Proprietar: $owner"
+
+if [ $((perms & 002)) -ne 0 ]; then
+    echo -e "\e[31m[CRITIC] Fisierul este modificabil de oricine (world-writable)!\e[0m"
+    ((crit_set++))
+else
+    echo -e "\e[32m[OK] Fisierul nu este world-writable\e[0m"
+    ((ok_set++))
+fi
+
+if [ $((perms & 020)) -ne 0 ]; then
+    echo -e "\e[33m[WARNING] Fisierul este modificabil de grup\e[0m"
+    echo -e "\e[33m         Recomandare: chmod 644 sau 600\e[0m"
+fi
+
+
+#recomandare (muta la fin)
+if [ "$perms" != "600" ] && [ "$perms" != "644" ]; then
+    echo -e "\e[33m[WARNING] Permisiuni recomandate: 600 (root only) sau 644\e[0m"
+    echo -e "\e[33m         Permisiuni curente: $perms\e[0m"
+fi
+
+
 echo -e "\e[34m------------------------------------------------\e[0m"
 
 
