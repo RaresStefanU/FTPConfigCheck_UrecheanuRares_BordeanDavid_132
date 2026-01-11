@@ -65,6 +65,32 @@ ParseIgnoreRegex
 
 # - permisiunile fisierului:
 
+echo ""
+echo "[INFO] Verificare permisiuni fisier:"
+perms=$(stat -c "%a" "$CALE_FISIER" 2>/dev/null)
+owner=$(stat -c "%U" "$CALE_FISIER" 2>/dev/null)
+echo "[INFO] Permisiuni curente: $perms"
+echo "[INFO] Proprietar: $owner"
+
+if [ $((perms & 002)) -ne 0 ]; then
+    echo -e "\e[31m[CRITIC] Fisierul este modificabil de oricine (world-writable)!\e[0m"
+    ((setari_critice++))
+else
+    echo -e "\e[32m[OK] Fisierul nu este world-writable\e[0m"
+    ((setari_ok++))
+fi
+
+if [ $((perms & 020)) -ne 0 ]; then
+    echo -e "\e[33m[WARNING] Fisierul este modificabil de grup\e[0m"
+    echo -e "\e[33m         Recomandare: chmod 644 sau 600\e[0m"
+fi
+
+if [ "$perms" != "600" ] && [ "$perms" != "644" ]; then
+    echo -e "\e[33m[WARNING] Permisiuni recomandate: 600 (root only) sau 644\e[0m"
+    echo -e "\e[33m         Permisiuni curente: $perms\e[0m"
+fi
+
+echo ""
 
 
 # - optiuni critice de securitate:
