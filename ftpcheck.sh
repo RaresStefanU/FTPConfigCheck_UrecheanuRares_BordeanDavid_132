@@ -12,9 +12,6 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-CALE_FISIER=$1
-
-echo "[INFO] Verificare existenta fisier:"
 if ! [ -e "$CALE_FISIER" ]; then
     echo -e "\e[31mEroare: Fisierul nu a fost gasit!\e[0m"
     exit 1
@@ -32,10 +29,9 @@ fi
 # Parsing fisier + ignora comentariile + ?regex (am pus totul intr-o functie)
 ParseIgnoreRegex() {
 
-    echo "[INFO] Parsing in desfasurare:"
     # Doua matrice asociative:
-    declare -A value # prima pentru valoari - atribute ale configurarii
-    declare -A line_no # a doua pentru linia pe care se afla valoarea
+    declare -gA value # prima pentru valoari - atribute ale configurarii
+    declare -gA line_no # a doua pentru linia pe care se afla valoarea
 
 
     local nr=0 # contor pentru liniile fisierului
@@ -58,15 +54,14 @@ ParseIgnoreRegex() {
             echo "[CRITIC] Eroare la folosirea expresiilor regulare pe linia $nr !"
         fi
     done < "$CALE_FISIER" #"$CONFIG"
-    echo "[INFO] Parsing complet."
-    echo ""
 }
 ParseIgnoreRegex
 
 # - permisiunile fisierului:
 
-echo ""
-echo "[INFO] Verificare permisiuni fisier:"
+crit_set=0
+ok_set=0
+
 perms=$(stat -c "%a" "$CALE_FISIER" 2>/dev/null)
 owner=$(stat -c "%U" "$CALE_FISIER" 2>/dev/null)
 echo "[INFO] Permisiuni curente: $perms"
@@ -74,10 +69,10 @@ echo "[INFO] Proprietar: $owner"
 
 if [ $((perms & 002)) -ne 0 ]; then
     echo -e "\e[31m[CRITIC] Fisierul este modificabil de oricine (world-writable)!\e[0m"
-    ((setari_critice++))
+    ((crit_set++))
 else
     echo -e "\e[32m[OK] Fisierul nu este world-writable\e[0m"
-    ((setari_ok++))
+    ((ok_set++))
 fi
 
 if [ $((perms & 020)) -ne 0 ]; then
