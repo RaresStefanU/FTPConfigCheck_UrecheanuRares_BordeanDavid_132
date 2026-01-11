@@ -85,6 +85,8 @@ if [ $((perms & 020)) -ne 0 ]; then
     echo -e "\e[33m         Recomandare: chmod 644 sau 600\e[0m"
 fi
 
+
+#recomandare (muta la fin)
 if [ "$perms" != "600" ] && [ "$perms" != "644" ]; then
     echo -e "\e[33m[WARNING] Permisiuni recomandate: 600 (root only) sau 644\e[0m"
     echo -e "\e[33m         Permisiuni curente: $perms\e[0m"
