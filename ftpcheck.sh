@@ -4,11 +4,6 @@
 # - existenta fisierului:
 CALE_FISIER=$1
 
-if [ ! -r "$CALE_FISIER" ]; then
-    echo "\e[31mEroare: fisierul nu poate fi citit\e[0m"
-    exit 1
-fi
-
 # Daca utilizatorul nu a dat ca parametru fisierul
 if [ -z "$1" ]; then
     echo "Utilizare: $0 <cale_fisier>"
@@ -16,10 +11,18 @@ if [ -z "$1" ]; then
 fi
 
 if ! [ -e "$CALE_FISIER" ]; then
-    echo "Fisierul nu a fost gasit!"
-    exit 2
+    echo -e "\e[31mEroare: Fisierul nu a fost gasit!\e[0m"
+    exit 1
+elif ! [ -f "$CALE_FISIER" ]; then 
+    # Daca calea nu duce catre un fisier (ex. duce catre un director)
+    echo -e "\e[31mEroare: Calea specificata nu este un fisier valid!\e[0m"
+    exit 1
 fi
 
+if [ ! -r "$CALE_FISIER" ]; then
+    echo -e "\e[31mEroare: fisierul nu poate fi citit\e[0m"
+    exit 1
+fi
 
 # Parsing fisier + ignora comentariile + regex
 
@@ -90,8 +93,8 @@ for key in "${!value_optim[@]}"; do
         ((setari_critice++))
     else
         if [[ "${value[$key]}" != "${value_optim[$key]}" ]]; then
-            echo -e "\e[33m[NESIGUR] $key=${value[$key]} (linia ${line_no[$key]}), ar trebui ${value_optim[$key]}\e[33m"
-            ((setari_nesigure++))
+            echo -e "\e[33m[NESIGUR] $key=${value[$key]} (linia ${line_no[$key]}), ar trebui ${value_optim[$key]}\e[0m"
+            ((setari_nesigure++))elif ! [ -f "$CALE_FISIER" ]; then 
         else
             echo -e "\e[32m[OK] $key=${value[$key]} (linie ${line_no[$key]})\e[0m"
             ((setari_ok++))
