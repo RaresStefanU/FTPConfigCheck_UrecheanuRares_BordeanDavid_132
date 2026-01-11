@@ -94,7 +94,7 @@ for key in "${!value_optim[@]}"; do
     else
         if [[ "${value[$key]}" != "${value_optim[$key]}" ]]; then
             echo -e "\e[33m[NESIGUR] $key=${value[$key]} (linia ${line_no[$key]}), ar trebui ${value_optim[$key]}\e[0m"
-            ((setari_nesigure++))elif ! [ -f "$CALE_FISIER" ]; then 
+            ((setari_nesigure++))
         else
             echo -e "\e[32m[OK] $key=${value[$key]} (linie ${line_no[$key]})\e[0m"
             ((setari_ok++))
